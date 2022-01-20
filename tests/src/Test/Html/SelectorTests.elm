@@ -18,8 +18,6 @@ all =
     describe "Test.Html.Selector"
         [ bug13
         , textSelectors
-        , classSelectors
-        , attributeSelectors
         , nsSelectors
         ]
 
@@ -27,7 +25,7 @@ all =
 nsSelectors : Test
 nsSelectors =
     describe "NS selectors"
-        [ test "classNS selector finds class on svg with one class" <|
+        [ test "class selector finds class on svg with one class" <|
             \() ->
                 let
                     svgClass =
@@ -37,8 +35,8 @@ nsSelectors =
                     [ SvgAttribs.class svgClass ]
                     [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
                     |> Query.fromHtml
-                    |> Query.has [ classNS svgClass ]
-        , test "classNS selector finds class on svg with multiple classes" <|
+                    |> Query.has [ class svgClass ]
+        , test "class selector finds class on svg with multiple classes" <|
             \() ->
                 let
                     svgClass =
@@ -48,8 +46,8 @@ nsSelectors =
                     [ SvgAttribs.class svgClass, SvgAttribs.class "another-NS-class" ]
                     [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
                     |> Query.fromHtml
-                    |> Query.has [ classNS svgClass ]
-        , test "classesNS selector finds all classes on svg" <|
+                    |> Query.has [ class svgClass ]
+        , test "classes selector finds all classes on svg" <|
             \() ->
                 let
                     svgClass =
@@ -59,8 +57,8 @@ nsSelectors =
                     [ SvgAttribs.class svgClass, SvgAttribs.class "another-NS-class" ]
                     [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
                     |> Query.fromHtml
-                    |> Query.has [ classesNS [ svgClass, "another-NS-class" ] ]
-        , test "classesNS selector finds single class on svg with multiple classes" <|
+                    |> Query.has [ classes [ svgClass, "another-NS-class" ] ]
+        , test "classes selector finds single class on svg with multiple classes" <|
             \() ->
                 let
                     svgClass =
@@ -70,52 +68,7 @@ nsSelectors =
                     [ SvgAttribs.class svgClass, SvgAttribs.class "another-NS-class" ]
                     [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
                     |> Query.fromHtml
-                    |> Query.has [ classesNS [ svgClass ] ]
-        , test "exactClassNameNS selector finds the exact class value on svg" <|
-            \() ->
-                let
-                    svgClass =
-                        "some-NS-class another-NS-class"
-                in
-                Svg.svg
-                    [ SvgAttribs.class svgClass ]
-                    [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
-                    |> Query.fromHtml
-                    |> Query.has [ exactClassNameNS svgClass ]
-        ]
-
-
-attributeSelectors : Test
-attributeSelectors =
-    describe "attribute selectors"
-        [ test "attribute selector does not find class on svg elements" <|
-            \() ->
-                let
-                    svgClass =
-                        "some-NS-class"
-                in
-                Svg.svg
-                    [ SvgAttribs.class svgClass ]
-                    [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
-                    |> Query.fromHtml
-                    |> Query.hasNot [ attribute (SvgAttribs.class svgClass) ]
-        ]
-
-
-classSelectors : Test
-classSelectors =
-    describe "class selectors"
-        [ test "does not find class on svg elements" <|
-            \() ->
-                let
-                    svgClass =
-                        "some-NS-class"
-                in
-                Svg.svg
-                    [ SvgAttribs.class svgClass ]
-                    [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
-                    |> Query.fromHtml
-                    |> Query.hasNot [ class svgClass ]
+                    |> Query.has [ classes [ svgClass ] ]
         ]
 
 
