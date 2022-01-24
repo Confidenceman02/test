@@ -6,11 +6,12 @@ module Test.Html.SelectorTests exposing (all)
 import Fuzz exposing (..)
 import Html
 import Html.Attributes as Attr
+import Json.Encode
 import Svg
 import Svg.Attributes as SvgAttribs
 import Test exposing (..)
 import Test.Html.Query as Query
-import Test.Html.Selector exposing (..)
+import Test.Html.Selector as Selector exposing (..)
 
 
 all : Test
@@ -18,58 +19,52 @@ all =
     describe "Test.Html.Selector"
         [ bug13
         , textSelectors
-        , nsSelectors
+        , classSelectors
         ]
 
 
-nsSelectors : Test
-nsSelectors =
-    describe "NS selectors"
-        [ test "class selector finds class on svg with one class" <|
-            \() ->
-                let
-                    svgClass =
-                        "some-NS-class"
-                in
+classSelectors : Test
+classSelectors =
+    describe "class attribute assertions"
+        [ describe "Using Html.Attribute.class" <|
+            classAssertions [ "some-custom-class" ] <|
+                Html.div [ Attr.class "some-custom-class" ] []
+        , describe "Using Html.Attribute.property" <|
+            classAssertions [ "some-custom-class" ] <|
+                Html.div [ Attr.property "className" (Json.Encode.string "some-custom-class") ] []
+        , describe "Using Html.Attribute.attribute" <|
+            classAssertions [ "some-custom-class" ] <|
+                Html.div [ Attr.attribute "class" "some-custom-class" ] []
+        , describe "svg with one class" <|
+            classAssertions [ "some-NS-class" ] <|
+                Svg.svg [ SvgAttribs.class "some-NS-class" ] []
+        , describe "with multiple classes" <|
+            classAssertions [ "some-NS-class", "another-NS-class" ] <|
                 Svg.svg
-                    [ SvgAttribs.class svgClass ]
-                    [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
-                    |> Query.fromHtml
-                    |> Query.has [ class svgClass ]
-        , test "class selector finds class on svg with multiple classes" <|
-            \() ->
-                let
-                    svgClass =
-                        "some-NS-class"
-                in
-                Svg.svg
-                    [ SvgAttribs.class svgClass, SvgAttribs.class "another-NS-class" ]
-                    [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
-                    |> Query.fromHtml
-                    |> Query.has [ class svgClass ]
-        , test "classes selector finds all classes on svg" <|
-            \() ->
-                let
-                    svgClass =
-                        "some-NS-class"
-                in
-                Svg.svg
-                    [ SvgAttribs.class svgClass, SvgAttribs.class "another-NS-class" ]
-                    [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
-                    |> Query.fromHtml
-                    |> Query.has [ classes [ svgClass, "another-NS-class" ] ]
-        , test "classes selector finds single class on svg with multiple classes" <|
-            \() ->
-                let
-                    svgClass =
-                        "some-NS-class"
-                in
-                Svg.svg
-                    [ SvgAttribs.class svgClass, SvgAttribs.class "another-NS-class" ]
-                    [ Svg.circle [ SvgAttribs.cx "50", SvgAttribs.cy "50", SvgAttribs.r "40" ] [] ]
-                    |> Query.fromHtml
-                    |> Query.has [ classes [ svgClass ] ]
+                    [ SvgAttribs.class "some-NS-class"
+                    , SvgAttribs.class "another-NS-class"
+                    ]
+                    []
         ]
+
+
+classAssertions : List String -> Html.Html msg -> List Test
+classAssertions classes html =
+    (test "Test.Html.Selector.classes finds the classes" <|
+        \_ ->
+            html
+                |> Query.fromHtml
+                |> Query.has [ Selector.classes classes ]
+    )
+        :: List.map
+            (\className ->
+                test ("Test.Html.Selector.class finds the class: " ++ className) <|
+                    \_ ->
+                        html
+                            |> Query.fromHtml
+                            |> Query.has [ Selector.class className ]
+            )
+            classes
 
 
 {-| <https://github.com/eeue56/elm-html-test/issues/13>
@@ -91,7 +86,7 @@ bug13 =
                     [ Html.h1 [ Attr.title "greeting", Attr.class "me" ] [ Html.text "Hello!" ] ]
                     |> Query.fromHtml
                     |> Query.find [ attribute (Attr.title "greeting") ]
-                    |> Query.has [ text "Hello!", class "me" ]
+                    |> Query.has [ Selector.text "Hello!", Selector.class "me" ]
         ]
 
 
